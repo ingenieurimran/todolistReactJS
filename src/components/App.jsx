@@ -1,46 +1,88 @@
 import React, { useState } from 'react'
-import ToDoList from './ToDoList'
+import ToDoItem from './ToDoItem'
 
 function App() {
-  const [inputText, setInputText] = useState('')
+  const [textInput, setTextInput] = useState('')
   const [items, setItems] = useState([])
+  const [isToggleSubmit, setIsToggleSubmit] = useState(true)
+  const [isNeuItemId, setIsNeuItemId] = useState(null)
   function handleChange(params) {
-    const newItem = params.target.value
-    setInputText(newItem)
+    const newTextInput = params.target.value
+    setTextInput(newTextInput)
   }
   function handleClick(params) {
-    setItems((preValue) => {
-      return [...preValue, inputText]
-    })
-    setInputText('')
+    const textInputNew = {
+      id: new Date().getTime().toString(),
+      name: textInput,
+    }
+    if (!textInput) {
+    } else if (textInput && !isToggleSubmit) {
+      setItems((preValue) => {
+        return preValue.map((item) => {
+          if (item.id === isNeuItemId) {
+            return { ...item, name: textInput }
+          } else {
+            return item
+          }
+        })
+      })
+      setIsToggleSubmit(true)
+      setTextInput('')
+      setIsNeuItemId(null)
+    } else {
+      setItems((preValue) => {
+        return [...preValue, textInputNew]
+      })
+    }
+
+    setTextInput('')
   }
 
-  function handleDeleteItem(id) {
-    setItems((preItem) => {
-      return preItem.filter((item, index) => {
-        return index !== id
+  function handleDelete(id) {
+    setItems((preItems) => {
+      return preItems.filter((item) => {
+        return item.id !== id
       })
     })
   }
+
+  function handleEdit(id) {
+    let newTextInput = items.find((item) => {
+      return item.id === id
+    })
+    setIsToggleSubmit(false)
+    setTextInput(newTextInput.name)
+    setIsNeuItemId(id)
+  }
+
   return (
     <div className="container">
       <div className="heading">
-        <h1>ReactJS</h1>
+        <h1>React JS</h1>
       </div>
       <div className="form">
-        <input onChange={handleChange} type="text" value={inputText} />
-        <button onClick={handleClick}>
-          <span>Add</span>
-        </button>
+        <input onChange={handleChange} value={textInput} type="text" />
+        {isToggleSubmit ? (
+          <button onClick={handleClick}>
+            <span>+</span>
+          </button>
+        ) : (
+          <i
+            className="fa fa-edit add-btn"
+            title="Add Item"
+            onClick={handleClick}
+          ></i>
+        )}
       </div>
       <div>
         <ul>
-          {items.map((listToDo, index) => (
-            <ToDoList
-              key={index}
-              id={index}
-              item={listToDo}
-              onChecked={handleDeleteItem}
+          {items.map((toDoItem) => (
+            <ToDoItem
+              key={toDoItem.id}
+              id={toDoItem.id}
+              text={toDoItem.name}
+              onClickedDelete={handleDelete}
+              onClickedEdit={handleEdit}
             />
           ))}
         </ul>
